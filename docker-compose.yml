@@ -4,6 +4,8 @@ services:
   jupyter:
     build: .
     volumes:
+      - $HOME/.gitconfig:/home/jovyan/.gitconfig
+      - $HOME/.gitignore:/home/jovyan/.gitignore
       - ./sources:/home/jovyan/sources
     ports:
       - "8888:8888"
