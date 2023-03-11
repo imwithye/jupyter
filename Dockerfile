@@ -1,4 +1,7 @@
 FROM jupyter/minimal-notebook:notebook-6.5.3
 
 RUN rm -rf /home/jovyan/work && \
-    pip install numpy pandas matplotlib scikit-learn
+    # Basic Python packages
+    pip install ipywidgets numpy pandas matplotlib scikit-learn && \
+    # PyTorch
+    pip install torch torchvision torchaudio
