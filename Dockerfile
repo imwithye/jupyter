@@ -18,7 +18,13 @@ RUN groupadd --gid $USER_GID $USERNAME \
 RUN apt update
 
 # add default packages
-RUN apt install -y build-essential cmake zsh git vim htop
+RUN apt install -y build-essential cmake zsh git vim htop wget curl
+
+# Install packages in conda environment
+USER $USERNAME
+COPY install_conda.sh /tmp/
+RUN bash /tmp/install_conda.sh
+USER root 
 
 # setup entrypoint
 COPY entrypoint.sh /usr/bin/entrypoint
