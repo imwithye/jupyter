@@ -6,7 +6,7 @@ on:
     - 'main'
 
 jobs:
-  docker:
+  build-image:
     runs-on: ubuntu-latest
     steps:
     - name: Set up QEMU
@@ -24,6 +24,6 @@ jobs:
     - name: Build and push
       uses: docker/build-push-action@v4
       with:
-        context: docker
+        context: ./docker
         push: true
         tags: imwithye/jupyterlab:latest
