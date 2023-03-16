@@ -1,11 +1,29 @@
-FROM jupyter/minimal-notebook:notebook-6.5.3
+FROM nvidia/cuda:11.8.0-base-ubuntu22.04
 
-RUN rm -rf /home/jovyan/work && \
-    # Basic Python packages
-    pip install ipywidgets numpy pandas matplotlib scikit-learn && \
-    # PyTorch
-    pip install torch torchvision torchaudio && \
-    # OpenCV
-    pip install opencv-python && \
-    # Hugging Face
-    pip install transformers datasets evaluate
+# add non-root user
+ARG USERNAME=jupyter
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+# create the user
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    #
+    # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
+    && apt update \
+    && apt install -y sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+RUN apt update
+
+# add default packages
+RUN apt install -y build-essential cmake zsh git vim htop
+
+# setup entrypoint
+COPY entrypoint.sh /usr/bin/entrypoint
+RUN chmod +x /usr/bin/entrypoint
+ENTRYPOINT ["/usr/bin/entrypoint"]
+
+# user mode
+USER $USERNAME
