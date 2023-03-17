@@ -21,10 +21,8 @@ RUN apt update
 RUN apt install -y build-essential cmake zsh git vim htop wget curl
 
 # Install packages in conda environment
-USER $USERNAME
-COPY install_conda.sh /tmp/
-RUN bash /tmp/install_conda.sh
-USER root 
+COPY install_anaconda.sh /tmp/
+RUN bash /tmp/install_anaconda.sh
 
 # setup entrypoint
 COPY entrypoint.sh /usr/bin/entrypoint
