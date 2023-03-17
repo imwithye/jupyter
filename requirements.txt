@@ -1,0 +1,13 @@
+jupyterlab
+ipywidgets
+livelossplot
+jupyter-book
+matplotlib
+tabulate
+tqdm
+rich
+numpy
+opencv-python-headless
+torch
+torchvision
+lightning

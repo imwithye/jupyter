@@ -2,7 +2,7 @@
 
 # Run jupyter in foreground if no commands specified
 if [ -z "$1" ]; then
-    echo "Start Jupyter"
+    jupyter lab
 else
     exec "$@"
 fi

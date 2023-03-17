@@ -4,6 +4,7 @@ FROM nvidia/cuda:11.8.0-base-ubuntu22.04
 ARG USERNAME=jupyter
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
+ENV HOME=/home/$USERNAME
 
 # create the user
 RUN groupadd --gid $USER_GID $USERNAME \
@@ -20,13 +21,17 @@ RUN apt update
 # add default packages
 RUN apt install -y build-essential cmake zsh git vim htop wget curl
 
-# Install packages in conda environment
+# Install miniconda
 COPY install_miniconda.sh /tmp/
 RUN bash /tmp/install_miniconda.sh
-ENV PATH=$PATH:/opt/miniconda3/condabin:/opt/miniconda3/bin
+ENV PATH=$PATH:/opt/miniconda3/condabin:/opt/miniconda3/bin:$HOME/.local/bin
 USER $USERNAME
 RUN conda init
 USER root
+
+# Install pip packages
+COPY requirements.txt /tmp/
+RUN pip install -r /tmp/requirements.txt
 
 # setup entrypoint
 COPY entrypoint.sh /usr/bin/entrypoint
@@ -34,4 +39,5 @@ RUN chmod +x /usr/bin/entrypoint
 ENTRYPOINT ["/usr/bin/entrypoint"]
 
 # user mode
+WORKDIR $HOME
 USER $USERNAME
