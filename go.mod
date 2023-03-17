@@ -2,7 +2,10 @@ module jupyterlab
 
 go 1.20
 
-require github.com/urfave/cli/v2 v2.25.0
+require (
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+	github.com/urfave/cli/v2 v2.25.0
+)
 
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect

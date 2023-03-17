@@ -8,6 +8,7 @@ if [ -z "$1" ]; then
     fi
     if [ -z "$JUPYTERLAB_TOKEN" ]; then
         PARAMS="$PARAMS --NotebookApp.token=$JUPYTERLAB_TOKEN"
+    fi
     jupyter lab $PARAMS
 else
     exec "$@"

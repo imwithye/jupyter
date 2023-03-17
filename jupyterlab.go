@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/google/shlex"
 	"github.com/urfave/cli/v2"
 )
 
@@ -15,14 +16,21 @@ const (
 )
 
 var (
-	pull     bool
-	port     int
-	detached bool
-	token    string
-	tag      string
+	dryrun   bool   = false
+	pull     bool   = false
+	port     int    = 8888
+	detached bool   = false
+	token    string = ""
+	tag      string = "latest"
+	args     string = ""
 )
 
-func DockerPullCmd() error {
+func DockerPullCmd(ctx *cli.Context) error {
+	if dryrun {
+		fmt.Println("docker", "pull", fmt.Sprintf("%s:%s", DOCKER_IMAGE, tag))
+		return nil
+	}
+
 	cmd := exec.Command("docker", "pull", fmt.Sprintf("%s:%s", DOCKER_IMAGE, tag))
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -30,16 +38,38 @@ func DockerPullCmd() error {
 	return cmd.Run()
 }
 
-func DockerRunCmd() error {
-	args := []string{"run"}
-	args = append(args, "-p", fmt.Sprintf("%d:%d", port, port))
+func DockerRunCmd(ctx *cli.Context) error {
+	params := []string{"run"}
 	if detached {
-		args = append(args, "-d")
+		params = append(params, "-d")
+		params = append(params, "--restart", "on-failure")
+	} else {
+		params = append(params, "-it", "--rm")
 	}
-	args = append(args, "-e", fmt.Sprintf("JUPYTERLAB_PORT=%d", port))
-	args = append(args, "-e", fmt.Sprintf("JUPYTERLAB_TOKEN=%s", token))
-	args = append(args, fmt.Sprintf("%s:%s", DOCKER_IMAGE, tag))
-	cmd := exec.Command("docker", args...)
+	params = append(params, "-p", fmt.Sprintf("%d:%d", port, port))
+	if port > 0 {
+		params = append(params, "-e", fmt.Sprintf("JUPYTERLAB_PORT=%d", port))
+	}
+	if token != "" {
+		params = append(params, "-e", fmt.Sprintf("JUPYTERLAB_TOKEN=%s", token))
+	}
+	workingDir := ctx.Args().First()
+	if workingDir == "" {
+		workingDir = "."
+	}
+	params = append(params, "-v", fmt.Sprintf("%s:%s", workingDir, "/home/jupyter/Workspace"))
+	if args != "" {
+		if argsSplit, err := shlex.Split(args); err == nil {
+			params = append(params, argsSplit...)
+		}
+	}
+	params = append(params, fmt.Sprintf("%s:%s", DOCKER_IMAGE, tag))
+	if dryrun {
+		fmt.Println("docker", strings.Join(params, " "))
+		return nil
+	}
+
+	cmd := exec.Command("docker", params...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -48,12 +78,12 @@ func DockerRunCmd() error {
 
 func Run(ctx *cli.Context) error {
 	if pull {
-		err := DockerPullCmd()
+		err := DockerPullCmd(ctx)
 		if err != nil {
 			return err
 		}
 	}
-	return DockerRunCmd()
+	return DockerRunCmd(ctx)
 }
 
 func main() {
@@ -62,41 +92,48 @@ func main() {
 		Usage: "Run JupyterLab in the container.",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
+				Name:        "dryrun",
+				Value:       dryrun,
+				Usage:       "dryrun",
+				Destination: &dryrun,
+			},
+			&cli.BoolFlag{
 				Name:        "pull",
-				Value:       false,
+				Value:       pull,
 				Usage:       "pull the docker image",
 				Destination: &pull,
 			},
 			&cli.IntFlag{
 				Name:        "port",
 				Aliases:     []string{"p"},
-				Value:       8888,
+				Value:       port,
 				Usage:       "port to expose",
 				Destination: &port,
 			},
 			&cli.BoolFlag{
 				Name:        "detached",
 				Aliases:     []string{"d"},
-				Value:       false,
+				Value:       detached,
 				Usage:       "run in detached mode",
 				Destination: &detached,
 			},
 			&cli.StringFlag{
 				Name:        "token",
+				Value:       token,
 				Usage:       "jupyterlab token",
 				Destination: &token,
-				Action: func(c *cli.Context, t string) error {
-					if t != strings.ToLower(t) {
-						return fmt.Errorf("token must be lowercase")
-					}
-					return nil
-				},
 			},
 			&cli.StringFlag{
 				Name:        "tag",
-				Value:       "latest",
+				Value:       tag,
 				Usage:       "docker image tag",
 				Destination: &tag,
+			},
+			&cli.StringFlag{
+				Name:        "args",
+				Value:       args,
+				Usage:       "additional docker arguments",
+				Destination: &args,
 			},
 		},
 		Action: Run,
