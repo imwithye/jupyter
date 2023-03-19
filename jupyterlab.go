@@ -47,12 +47,6 @@ func DockerRunCmd(ctx *cli.Context) error {
 		params = append(params, "-it", "--rm")
 	}
 	params = append(params, "-p", fmt.Sprintf("%d:%d", port, port))
-	if port > 0 {
-		params = append(params, "-e", fmt.Sprintf("JUPYTERLAB_PORT=%d", port))
-	}
-	if token != "" {
-		params = append(params, "-e", fmt.Sprintf("JUPYTERLAB_TOKEN=%s", token))
-	}
 	workingDir := ctx.Args().First()
 	if workingDir == "" {
 		workingDir = "."
@@ -64,6 +58,12 @@ func DockerRunCmd(ctx *cli.Context) error {
 		}
 	}
 	params = append(params, fmt.Sprintf("%s:%s", DOCKER_IMAGE, tag))
+	params = append(params, "jupyter", "lab", "--ip=0.0.0.0", fmt.Sprintf("--port=%d", port), "--no-browser")
+	if token != "" {
+		params = append(params, fmt.Sprintf("--NotebookApp.token=%s", token))
+	}
+
+	// if dry run
 	if dryrun {
 		fmt.Println("docker", strings.Join(params, " "))
 		return nil
