@@ -33,11 +33,6 @@ USER root
 COPY requirements.txt /tmp/
 RUN pip install -r /tmp/requirements.txt
 
-# setup entrypoint
-COPY entrypoint.sh /usr/bin/entrypoint
-RUN chmod +x /usr/bin/entrypoint
-ENTRYPOINT ["/usr/bin/entrypoint"]
-
 # user mode
 WORKDIR $HOME
 USER $USERNAME
