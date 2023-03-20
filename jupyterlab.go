@@ -26,6 +26,59 @@ var (
 	args     string = ""
 )
 
+func AutoMounts() []string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return []string{}
+	}
+
+	args := []string{}
+
+	for {
+		pipConfigDir := filepath.Join(home, ".config", "pip")
+		pipConfigDir, err := filepath.Abs(pipConfigDir)
+		if err != nil {
+			break
+		}
+		_, err = os.Stat(pipConfigDir)
+		if err != nil {
+			break
+		}
+		args = append(args, "-v", fmt.Sprintf("%s:/home/jupyter/.config/pip", pipConfigDir))
+		break
+	}
+
+	for {
+		gitConfig := filepath.Join(home, ".gitconfig")
+		gitConfig, err := filepath.Abs(gitConfig)
+		if err != nil {
+			break
+		}
+		_, err = os.Stat(gitConfig)
+		if err != nil {
+			break
+		}
+		args = append(args, "-v", fmt.Sprintf("%s:/home/jupyter/.gitconfig", gitConfig))
+		break
+	}
+
+	for {
+		gitIgnore := filepath.Join(home, ".gitignore")
+		gitIgnore, err := filepath.Abs(gitIgnore)
+		if err != nil {
+			break
+		}
+		_, err = os.Stat(gitIgnore)
+		if err != nil {
+			break
+		}
+		args = append(args, "-v", fmt.Sprintf("%s:/home/jupyter/.gitignore", gitIgnore))
+		break
+	}
+
+	return args
+}
+
 func DockerPullCmd(ctx *cli.Context) error {
 	if dryrun {
 		fmt.Println("docker", "pull", fmt.Sprintf("%s:%s", DOCKER_IMAGE, tag))
@@ -55,6 +108,7 @@ func DockerRunCmd(ctx *cli.Context) error {
 		workingDir = "."
 	}
 	params = append(params, "-v", fmt.Sprintf("%s:%s", workingDir, "/home/jupyter/Workspace"))
+	params = append(params, AutoMounts()...)
 	if args != "" {
 		if argsSplit, err := shlex.Split(args); err == nil {
 			params = append(params, argsSplit...)
