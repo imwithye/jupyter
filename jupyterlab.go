@@ -20,6 +20,7 @@ var (
 	pull     bool   = false
 	port     int    = 8888
 	detached bool   = false
+	gpu      bool   = false
 	token    string = ""
 	tag      string = "latest"
 	args     string = ""
@@ -41,10 +42,12 @@ func DockerPullCmd(ctx *cli.Context) error {
 func DockerRunCmd(ctx *cli.Context) error {
 	params := []string{"run"}
 	if detached {
-		params = append(params, "-d")
-		params = append(params, "--restart", "on-failure")
+		params = append(params, "-d", "--restart", "on-failure")
 	} else {
 		params = append(params, "-it", "--rm")
+	}
+	if gpu {
+		params = append(params, "--gpus", "all")
 	}
 	params = append(params, "-p", fmt.Sprintf("%d:%d", port, port))
 	workingDir := ctx.Args().First()
@@ -117,8 +120,16 @@ func main() {
 				Usage:       "run in detached mode",
 				Destination: &detached,
 			},
+			&cli.BoolFlag{
+				Name:        "gpu",
+				Aliases:     []string{"g"},
+				Value:       gpu,
+				Usage:       "enable gpu",
+				Destination: &gpu,
+			},
 			&cli.StringFlag{
 				Name:        "token",
+				Aliases:     []string{"t"},
 				Value:       token,
 				Usage:       "jupyterlab token",
 				Destination: &token,
