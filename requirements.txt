@@ -11,3 +11,7 @@ opencv-python-headless
 torch
 torchvision
 lightning
+transformers
+datasets
+evaluate
+nltk
