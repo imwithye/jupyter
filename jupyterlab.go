@@ -119,6 +119,7 @@ func DockerRunCmd(ctx *cli.Context) error {
 	if token != "" {
 		params = append(params, fmt.Sprintf("--NotebookApp.token=%s", token))
 	}
+	params = append(params, "--NotebookApp.terminado_settings={'shell_command': ['/usr/bin/bash']}")
 
 	// if dry run
 	if dryrun {
