@@ -34,5 +34,6 @@ COPY requirements.txt /tmp/
 RUN pip install -r /tmp/requirements.txt
 
 # user mode
+SHELL ["/bin/bash", "-c"]
 WORKDIR $HOME
 USER $USERNAME
