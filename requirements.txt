@@ -7,6 +7,7 @@ tabulate
 tqdm
 rich
 numpy
+scikit-learn
 opencv-python-headless
 torch
 torchvision
@@ -15,3 +16,4 @@ transformers
 datasets
 evaluate
 nltk
+spacy
